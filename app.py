@@ -29,13 +29,16 @@ app.add_middleware(
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 MODEL_PATH = os.path.join(BASE_DIR, "rent_optimizer_pipeline.pkl")
 
-# Load the Trained XGBoost Pipeline Model
+# Update your model loading block to show us the full error
 try:
     with open(MODEL_PATH, 'rb') as f:
         model_pipeline = pickle.load(f)
     print("🎯 Model pipeline loaded flawlessly!")
 except Exception as e:
-    print(f"❌ Initialization error: {e}")
+    # This will now show the REAL reason in your Render Logs
+    import traceback
+    print(f"❌ CRITICAL ERROR DURING LOAD: {str(e)}")
+    print(traceback.format_exc()) 
     model_pipeline = None
 
 # 3. Comprehensive Benchmark Matrix for Indian Localities
