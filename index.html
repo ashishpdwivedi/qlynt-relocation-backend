@@ -87,7 +87,7 @@
             };
 
             try {
-                const response = await fetch('https://qlynt-relocation-backend.onrender.com/optimize', {
+                const response = await fetch('/optimize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
