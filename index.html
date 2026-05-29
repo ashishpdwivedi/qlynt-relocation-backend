@@ -75,7 +75,13 @@
                 const response = await fetch('/optimize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    body: JSON.stringify({
+                        office_location: document.getElementById('office').value,
+                        max_budget: document.getElementById('budget').value,
+                        preferred_bhk: document.getElementById('bhk').value,
+                        property_size: document.getElementById('size').value,
+                        furnishing_status: document.getElementById('furnishing').value
+                    })
                 });
 
                 if (!response.ok) {
