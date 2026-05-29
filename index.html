@@ -6,77 +6,61 @@
     <title>Qlynt Relocation Optimizer</title>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex items-center justify-center p-4">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
 
     <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-5 gap-6">
-        
-        <div class="md:col-span-2 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-between">
-            <div>
-                <h2 class="text-xl font-bold text-emerald-400 mb-1">Relocation Optimizer 🚀</h2>
-                <p class="text-xs text-slate-400 mb-6">Find affordable neighborhoods based on your workplace address.</p>
-                
-                <form id="optimizerForm" class="space-y-4">
+        <div class="md:col-span-2 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
+            <h2 class="text-xl font-bold text-emerald-400 mb-1">Relocation Optimizer 🚀</h2>
+            <p class="text-xs text-slate-400 mb-6">Find affordable neighborhoods based on your workplace address.</p>
+            
+            <form id="optimizerForm" class="space-y-4">
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Workplace / Landmark</label>
+                    <input type="text" id="office" placeholder="e.g., IIT Delhi" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+                </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Max Monthly Rent Budget (₹)</label>
+                    <input type="number" id="budget" value="25000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+                </div>
+                <div class="grid grid-cols-2 gap-2">
                     <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Workplace / Landmark</label>
-                        <input type="text" id="office" placeholder="e.g., IIT Delhi, Connaught Place" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Max Monthly Rent Budget (₹)</label>
-                        <input type="number" id="budget" value="25000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-                    </div>
-
-                    <div class="grid grid-cols-2 gap-2">
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">BHK</label>
-                            <select id="bhk" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                                <option value="1">1 BHK</option>
-                                <option value="2" selected>2 BHK</option>
-                                <option value="3">3 BHK</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Size (Sq. Ft.)</label>
-                            <input type="number" id="size" value="900" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-                        </div>
-                    </div>
-
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Furnishing Status</label>
-                        <select id="furnishing" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500">
-                            <option value="Unfurnished">Unfurnished</option>
-                            <option value="Semi-Furnished" selected>Semi-Furnished</option>
-                            <option value="Fully Furnished">Fully Furnished</option>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">BHK</label>
+                        <select id="bhk" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
+                            <option value="1">1 BHK</option>
+                            <option value="2" selected>2 BHK</option>
+                            <option value="3">3 BHK</option>
                         </select>
                     </div>
-
-                    <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl transition duration-200 mt-4 text-sm cursor-pointer">
-                        Find Optimal Localities
-                    </button>
-                </form>
-            </div>
-        </div>
-
-        <div class="md:col-span-3 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col justify-center">
-            <h3 class="text-lg font-bold text-slate-200 mb-4">Top Neighborhood Matches</h3>
-            
-            <div id="resultsContainer" class="space-y-4 flex-1 flex flex-col justify-center items-center text-slate-500 text-center text-sm p-4">
-                <div>
-                    <span class="text-4xl">📍</span>
-                    <p class="mt-2">Enter your office address and budget parameters to compute smart location clusters.</p>
+                    <div>
+                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Size (Sq. Ft.)</label>
+                        <input type="number" id="size" value="900" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm" required>
+                    </div>
                 </div>
-            </div>
+                <div>
+                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Furnishing Status</label>
+                    <select id="furnishing" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
+                        <option value="Unfurnished">Unfurnished</option>
+                        <option value="Semi-Furnished" selected>Semi-Furnished</option>
+                        <option value="Fully Furnished">Fully Furnished</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl transition duration-200 mt-4 text-sm cursor-pointer">Find Optimal Localities</button>
+            </form>
         </div>
 
+        <div class="md:col-span-3 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col">
+            <h3 class="text-lg font-bold text-slate-200 mb-4">Top Neighborhood Matches</h3>
+            <div id="resultsContainer" class="flex-1 flex flex-col justify-center items-center text-slate-500 text-sm p-4">
+                <p>Enter your office address and hit "Find" to start.</p>
+            </div>
+        </div>
     </div>
 
     <script>
         document.getElementById('optimizerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const container = document.getElementById('resultsContainer');
-            
-            // Render a clean loading state
-            container.innerHTML = `<div class="animate-pulse text-emerald-400 font-medium text-sm">🔄 Analyzing city coordinates & running XGBoost matrix queries...</div>`;
+            container.innerHTML = `<div class="text-emerald-400 animate-pulse">Analyzing...</div>`;
 
             const payload = {
                 office_location: document.getElementById('office').value,
@@ -87,51 +71,34 @@
             };
 
             try {
-               // Change this line back to the full URL for stability
-                    const response = await fetch('https://qlynt-relocation-backend.onrender.com/optimize', {
+                // Using relative path so it hits the SAME server rendering the HTML
+                const response = await fetch('/optimize', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
                 });
 
-                const data = await response.json();
-
                 if (!response.ok) {
-                    container.innerHTML = `<div class="text-rose-400 p-4 border border-rose-900/30 bg-rose-950/20 rounded-xl w-full text-xs text-left">⚠️ Error: ${data.detail}</div>`;
-                    return;
+                    const errorText = await response.text();
+                    throw new Error(`Server Error (${response.status}): ${errorText}`);
                 }
 
-                if (data.success && data.recommendations.length > 0) {
-                    container.innerHTML = ''; // Wipe loading placeholder
-                    
-                    // Header noting pinned workplace location match
-                    const matchHeader = document.createElement('div');
-                    matchHeader.className = "w-full text-left text-xs bg-slate-800/50 p-2.5 rounded-lg border border-slate-800 text-slate-400 mb-2";
-                    matchHeader.innerHTML = `📍 Pinned Workplace Location: <strong class="text-emerald-400">${data.searched_workplace.name}</strong>`;
-                    container.appendChild(matchHeader);
-
-                    // Generate cards for recommendations
+                const data = await response.json();
+                
+                if (data.recommendations && data.recommendations.length > 0) {
+                    container.innerHTML = '';
                     data.recommendations.forEach(rec => {
-                        const card = document.createElement('div');
-                        card.className = "w-full bg-slate-950 border border-slate-800 hover:border-emerald-500/40 p-4 rounded-xl flex justify-between items-center transition duration-200";
-                        card.innerHTML = `
-                            <div>
-                                <h4 class="font-bold text-slate-200 text-base">${rec.locality}</h4>
-                                <p class="text-xs text-slate-400 mt-0.5">🚗 Commute: ${rec.distance_km} km (~${rec.commute_time_mins} mins away)</p>
-                            </div>
-                            <div class="text-right">
-                                <span class="text-xs text-slate-500 block font-medium">Est. Rent</span>
-                                <span class="text-xl font-extrabold text-emerald-400">₹${rec.predicted_rent.toLocaleString('en-IN')}</span>
-                            </div>
-                        `;
-                        container.appendChild(card);
+                        container.innerHTML += `
+                            <div class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl mb-3 flex justify-between">
+                                <div><h4 class="font-bold text-emerald-400">${rec.locality}</h4><p class="text-xs">Distance: ${rec.distance_km}km</p></div>
+                                <div class="text-right"><p class="text-xl font-bold">₹${rec.predicted_rent.toLocaleString()}</p></div>
+                            </div>`;
                     });
                 } else {
-                    container.innerHTML = `<div class="text-amber-400 p-4 text-center">☹️ No matching localities found within your price threshold. Try expanding your maximum budget or lowering your BHK count.</div>`;
+                    container.innerHTML = `<p class="text-amber-500">No matches found in your budget.</p>`;
                 }
-
             } catch (err) {
-                container.innerHTML = `<div class="text-rose-500 text-xs">Could not resolve connection to FastAPI framework. Verify your Uvicorn script configuration.</div>`;
+                container.innerHTML = `<div class="text-rose-500 text-xs p-4 bg-rose-950 rounded-lg">Connection Failed: ${err.message}</div>`;
             }
         });
     </script>
