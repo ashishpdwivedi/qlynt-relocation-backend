@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 import pickle
 import pandas as pd
@@ -15,7 +16,7 @@ app = FastAPI(
     version="3.0"
 )
 
-# Enable CORS so your website frontend can communicate securely with this API
+# Enable CORS so your frontend can communicate securely with this API from anywhere
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -126,11 +127,21 @@ class RelocationInput(BaseModel):
     property_size: float
     furnishing_status: str
 
-@app.get("/")
-def check_status():
-    return {"status": "online", "coverage": list(INDIA_LOCALITIES_HUBS.keys())}
+# 4. Route to Serve the Beautiful Frontend HTML Page Directly
+@app.get("/", response_class=HTMLResponse)
+def serve_frontend():
+    html_path = os.path.join(BASE_DIR, "index.html")
+    if os.path.exists(html_path):
+        with open(html_path, "r", encoding="utf-8") as f:
+            return f.read()
+    return """
+    <body style="background-color:#020617; color:#f8fafc; font-family:sans-serif; text-align:center; padding-top:100px;">
+        <h1 style="color:#34d399;">🎯 Qlynt Backend Active</h1>
+        <p>Your model is online, but index.html was not found in the root directory yet.</p>
+    </body>
+    """
 
-# Core Optimization Route
+# 5. Core Optimization Route
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
     if not model_pipeline:
@@ -150,7 +161,7 @@ def optimize_relocation(input_data: RelocationInput):
     except Exception as e:
         raise HTTPException(status_code=503, detail="Geocoding handshake timed out. Try executing again.")
 
-    # 4. Detect which city context the user is looking for dynamically
+    # 6. Detect which city context the user is looking for dynamically
     target_city = None
     for city in INDIA_LOCALITIES_HUBS.keys():
         if city.lower() in resolved_address:
@@ -167,7 +178,7 @@ def optimize_relocation(input_data: RelocationInput):
     localities_to_scan = INDIA_LOCALITIES_HUBS.get(target_city, [])
     suggestions = []
 
-    # 5. Build dynamic prediction batch data frame for the XGBoost pipeline
+    # 7. Build dynamic prediction batch data frame for the XGBoost pipeline
     batch_records = [{
         'bhk': input_data.preferred_bhk,
         'size': input_data.property_size,
@@ -179,7 +190,7 @@ def optimize_relocation(input_data: RelocationInput):
     input_df = pd.DataFrame(batch_records)
     predicted_rents = model_pipeline.predict(input_df)
 
-    # 6. Process Distance Matrix Metrics
+    # 8. Process Distance Matrix Metrics
     for idx, area in enumerate(localities_to_scan):
         distance_km = geodesic((office_lat, office_lon), (area["lat"], area["lon"])).km
         
