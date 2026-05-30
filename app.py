@@ -229,7 +229,6 @@ def optimize_relocation(input_data: RelocationInput):
             raw = base_preds[i] * area["factor"]
             rent_map[area["name"]] = int(round(raw / 500) * 500)
     else:
-        # Static Fallback estimation strategy if model loading drops out
         for area in localities:
             rent_map[area["name"]] = int(round(20000 / 500) * 500)
 
