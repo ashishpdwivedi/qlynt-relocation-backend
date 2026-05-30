@@ -471,7 +471,6 @@
 
     <div class="app-grid">
 
-        <!-- ── LEFT: Input Panel ── -->
         <div class="card">
             <p class="card-title">Relocation Parameters</p>
             <p class="card-desc">Fill in your constraints and let the engine compute optimal clusters.</p>
@@ -529,7 +528,6 @@
             </div>
         </div>
 
-        <!-- ── RIGHT: Results Panel ── -->
         <div class="card" id="resultsCard">
             <p class="results-panel-title">Top Neighborhood Matches</p>
             <div id="resultsContainer">
@@ -568,12 +566,14 @@
                     <p class="loading-text">Geocoding location & computing rent clusters…</p>
                 </div>`;
 
+            // FIXED: Added bathrooms key to fully respect the Pydantic backend model criteria
             const payload = {
-                office_location:  office,
-                max_budget:       budget,
-                preferred_bhk:    bhk,
-                property_size:    size,
-                furnishing_status: furnishing
+                office_location:   office,
+                max_budget:        budget,
+                preferred_bhk:     bhk,
+                property_size:     size,
+                furnishing_status: furnishing,
+                bathrooms:         2 
             };
 
             try {
