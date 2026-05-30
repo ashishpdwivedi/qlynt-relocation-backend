@@ -204,7 +204,6 @@ def optimize_relocation(input_data: RelocationInput):
         "Hyderabad": ["hyderabad"],
         "Kolkata":   ["kolkata", "calcutta"],
         "Chennai":   ["chennai", "madras"],
-        "Pune":      ["pune", "pimpri"],
     }
     target_city = None
     for city, aliases in city_aliases.items():
