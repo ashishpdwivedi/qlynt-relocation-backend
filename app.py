@@ -33,24 +33,46 @@ except Exception as e:
 
 INDIA_LOCALITIES_HUBS = {
     "Delhi": [
-        {"name": "Hauz Khas", "lat": 28.5494, "lon": 77.2001},
-        {"name": "Saket", "lat": 28.5244, "lon": 77.2066}
+        {"name":"Hauz Khas","lat":28.5494,"lon":77.2001},
+        {"name":"Saket","lat":28.5244,"lon":77.2066},
+        {"name":"Malviya Nagar","lat":28.5355,"lon":77.2100},
+        {"name":"Green Park","lat":28.5585,"lon":77.2066},
+        {"name":"Munirka","lat":28.5543,"lon":77.1734},
+        {"name":"Katwaria Sarai","lat":28.5422,"lon":77.1837},
+        {"name":"RK Puram","lat":28.5677,"lon":77.1760},
+        {"name":"Vasant Kunj","lat":28.5387,"lon":77.1554},
+        {"name":"Lajpat Nagar","lat":28.5677,"lon":77.2431},
+        {"name":"Defence Colony","lat":28.5717,"lon":77.2336},
+        {"name":"South Extension","lat":28.5688,"lon":77.2204},
+        {"name":"Nehru Place","lat":28.5494,"lon":77.2512},
+        {"name":"Kalkaji","lat":28.5496,"lon":77.2588},
+        {"name":"Connaught Place","lat":28.6304,"lon":77.2177},
+        {"name":"Karol Bagh","lat":28.6514,"lon":77.1907},
+        {"name":"Rajouri Garden","lat":28.6415,"lon":77.1218},
+        {"name":"Janakpuri","lat":28.6214,"lon":77.0878},
+        {"name":"Uttam Nagar","lat":28.6206,"lon":77.0651},
+        {"name":"Dwarka Sector 12","lat":28.5921,"lon":77.0461},
+        {"name":"Dwarka Sector 21","lat":28.5512,"lon":77.0565},
+        {"name":"Pitampura","lat":28.7033,"lon":77.1313},
+        {"name":"Shalimar Bagh","lat":28.7141,"lon":77.1644},
+        {"name":"Model Town","lat":28.7056,"lon":77.1905},
+        {"name":"Rohini","lat":28.7041,"lon":77.1025},
+        {"name":"Laxmi Nagar","lat":28.6304,"lon":77.2777},
+        {"name":"Mayur Vihar","lat":28.6065,"lon":77.2942},
+        {"name":"Preet Vihar","lat":28.6417,"lon":77.2922},
+        {"name":"Shahdara","lat":28.6737,"lon":77.2890},
+        {"name":"Nawada","lat":28.6212,"lon":77.0574},
+        {"name":"Mukherjee Nagar","lat":28.7100,"lon":77.2050}
     ],
-    "Mumbai": [
-        {"name": "Andheri West", "lat": 19.1176, "lon": 72.8339}
-    ],
-    "Bangalore": [
-        {"name": "Whitefield", "lat": 12.9698, "lon": 77.7500}
-    ],
-    "Hyderabad": [
-        {"name": "Gachibowli", "lat": 17.4401, "lon": 78.3489}
-    ],
-    "Kolkata": [
-        {"name": "New Town", "lat": 22.5898, "lon": 88.4748}
-    ],
-    "Chennai": [
-        {"name": "Velachery", "lat": 12.9802, "lon": 80.2227}
-    ]
+    "Noida": [{"name":f"Sector {i}","lat":28.55+(i*0.001),"lon":77.30+(i*0.001)} for i in range(1,31)],
+    "Gurgaon": [{"name":f"Sector {i}","lat":28.42+(i*0.001),"lon":77.05+(i*0.001)} for i in range(1,31)],
+    "Mumbai": [{"name":f"Mumbai Locality {i}","lat":19.00+(i*0.002),"lon":72.80+(i*0.001)} for i in range(1,31)],
+    "Bangalore": [{"name":f"Bangalore Locality {i}","lat":12.90+(i*0.002),"lon":77.55+(i*0.002)} for i in range(1,31)],
+    "Hyderabad": [{"name":f"Hyderabad Locality {i}","lat":17.35+(i*0.002),"lon":78.30+(i*0.002)} for i in range(1,31)],
+    "Chennai": [{"name":f"Chennai Locality {i}","lat":12.90+(i*0.002),"lon":80.15+(i*0.002)} for i in range(1,31)],
+    "Kolkata": [{"name":f"Kolkata Locality {i}","lat":22.45+(i*0.002),"lon":88.30+(i*0.002)} for i in range(1,31)],
+    "Pune": [{"name":f"Pune Locality {i}","lat":18.45+(i*0.002),"lon":73.75+(i*0.002)} for i in range(1,31)],
+    "Ahmedabad": [{"name":f"Ahmedabad Locality {i}","lat":23.00+(i*0.002),"lon":72.50+(i*0.002)} for i in range(1,31)]
 }
 
 @app.get("/", response_class=HTMLResponse)
