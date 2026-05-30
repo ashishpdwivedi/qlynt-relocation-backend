@@ -18,6 +18,7 @@ app = FastAPI(
     description="Hybrid XGBoost + locality-multiplier rent engine for Indian cities.",
     version="6.0"
 )
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -168,12 +169,12 @@ def fallback_estimate(base_rent, bhk, size, furnishing):
 # 5. Request Schema
 # ─────────────────────────────────────────────────────────────────
 class RelocationInput(BaseModel):
-    office_location:  str
-    max_budget:       float
-    preferred_bhk:    int
-    property_size:    float
+    office_location:   str
+    max_budget:        float
+    preferred_bhk:     int
+    property_size:     float
     furnishing_status: str
-    bathrooms:        int = 2       # new optional field, defaults to 2
+    bathrooms:         int = 2
 
 # ─────────────────────────────────────────────────────────────────
 # 6. Health Check
@@ -230,16 +231,11 @@ def optimize_relocation(input_data: RelocationInput):
     bathrooms  = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
 
     # ── Predict rents ───────────────────────────────────────────────
-    # STRATEGY:
-    #   Model gives city-level base price for exact (bhk, size, furnishing, bathroom, floor)
-    #   Each locality's factor adjusts it to reflect neighbourhood-level premium/discount
-    #   log(rent) target → expm1() converts back to ₹
     rent_map = {}
 
     if USE_MODEL and model_pipeline and target_city in MODEL_KNOWN_CITIES:
         model_furnishing = FURNISH_MAP.get(input_data.furnishing_status, "Semi-Furnished")
 
-        # Build one row per locality with its floor characteristics
         batch_rows = []
         for area in localities:
             floor_num   = area["floor"]
@@ -259,14 +255,12 @@ def optimize_relocation(input_data: RelocationInput):
 
         input_df  = pd.DataFrame(batch_rows)
         log_preds = model_pipeline.predict(input_df)
-        base_preds = np.expm1(log_preds)   # back to ₹
+        base_preds = np.expm1(log_preds)
 
         for i, area in enumerate(localities):
-            # Apply locality factor on top of model's per-row base
             raw = base_preds[i] * area["factor"]
             rent_map[area["name"]] = int(round(raw / 500) * 500)
     else:
-        # Pure fallback for Pune / model offline
         for area in localities:
             base = area.get("base_rent", 15000)
             rent_map[area["name"]] = fallback_estimate(
