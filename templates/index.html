@@ -43,7 +43,6 @@
             overflow-x: hidden;
         }
 
-        /* ── Ambient background glow ── */
         body::before {
             content: '';
             position: fixed;
@@ -57,7 +56,6 @@
             z-index: 0;
         }
 
-        /* ── Header ── */
         header {
             text-align: center;
             margin-bottom: 40px;
@@ -104,7 +102,6 @@
             line-height: 1.6;
         }
 
-        /* ── Main layout ── */
         .app-grid {
             display: grid;
             grid-template-columns: 360px 1fr;
@@ -118,7 +115,6 @@
             .app-grid { grid-template-columns: 1fr; }
         }
 
-        /* ── Card ── */
         .card {
             background: var(--surface);
             border: 1px solid var(--border);
@@ -136,7 +132,6 @@
             pointer-events: none;
         }
 
-        /* ── Form ── */
         .form-section-label {
             font-family: var(--font-head);
             font-size: 10px;
@@ -190,7 +185,6 @@
             line-height: 1.5;
         }
 
-        /* ── Submit Button ── */
         .btn-submit {
             width: 100%;
             background: var(--accent);
@@ -221,7 +215,6 @@
             box-shadow: none;
         }
 
-        /* ── Coverage chips ── */
         .coverage-row {
             display: flex;
             flex-wrap: wrap;
@@ -241,7 +234,6 @@
             padding: 3px 8px;
         }
 
-        /* ── Results panel ── */
         .results-panel-title {
             font-family: var(--font-head);
             font-size: 15px;
@@ -250,7 +242,6 @@
             margin-bottom: 20px;
         }
 
-        /* Empty state */
         .empty-state {
             display: flex;
             flex-direction: column;
@@ -273,7 +264,6 @@
             color: var(--text-3);
         }
 
-        /* Loading state */
         .loading-state {
             display: flex;
             flex-direction: column;
@@ -298,7 +288,6 @@
             letter-spacing: 0.02em;
         }
 
-        /* Workplace pinned banner */
         .workplace-banner {
             display: flex;
             align-items: center;
@@ -315,7 +304,6 @@
         .workplace-banner strong { color: var(--accent); font-weight: 600; }
         .workplace-banner .pin-icon { font-size: 14px; flex-shrink: 0; }
 
-        /* Result cards */
         .result-card {
             background: var(--surface-2);
             border: 1px solid var(--border);
@@ -337,7 +325,6 @@
             box-shadow: -3px 0 0 var(--accent);
         }
 
-        /* Staggered card animations */
         .result-card:nth-child(1) { animation-delay: 0.05s; }
         .result-card:nth-child(2) { animation-delay: 0.12s; }
         .result-card:nth-child(3) { animation-delay: 0.19s; }
@@ -407,7 +394,6 @@
             letter-spacing: -0.02em;
         }
 
-        /* Error state */
         .error-box {
             background: rgba(255,107,107,0.07);
             border: 1px solid rgba(255,107,107,0.2);
@@ -421,7 +407,6 @@
             animation: fadeSlideIn 0.3s ease both;
         }
 
-        /* No results */
         .no-results {
             text-align: center;
             padding: 40px 20px;
@@ -431,7 +416,6 @@
         }
         .no-results .icon { font-size: 32px; margin-bottom: 10px; }
 
-        /* Model badge */
         .model-badge {
             display: inline-flex;
             align-items: center;
@@ -452,7 +436,6 @@
         .model-badge.ml .dot { background: var(--accent); }
         .model-badge.ml { color: var(--accent-dim); }
 
-        /* Scrollbar */
         ::-webkit-scrollbar { width: 4px; }
         ::-webkit-scrollbar-track { background: transparent; }
         ::-webkit-scrollbar-thumb { background: var(--surface-2); border-radius: 2px; }
@@ -476,7 +459,6 @@
             <p class="card-desc">Fill in your constraints and let the engine compute optimal clusters.</p>
 
             <div id="optimizerForm">
-
                 <div class="form-group">
                     <label class="form-section-label">Workplace / Landmark</label>
                     <input type="text" id="office" placeholder="e.g., IIT Delhi, Bandra West, Hitech City" autocomplete="off">
@@ -524,7 +506,6 @@
                 <span class="chip">Hyderabad</span>
                 <span class="chip">Kolkata</span>
                 <span class="chip">Chennai</span>
-                <span class="chip">Pune</span>
             </div>
         </div>
 
@@ -541,7 +522,8 @@
     </div>
 
     <script>
-        const API_BASE = "https://qlynt-relocation-backend.onrender.com";
+        // Dynamic origin detection allows local testing and seamless server serving
+        const API_BASE = window.location.origin;
 
         async function runOptimizer() {
             const office     = document.getElementById('office').value.trim();
@@ -566,7 +548,6 @@
                     <p class="loading-text">Geocoding location & computing rent clusters…</p>
                 </div>`;
 
-            // FIXED: Added bathrooms key to fully respect the Pydantic backend model criteria
             const payload = {
                 office_location:   office,
                 max_budget:        budget,
@@ -601,7 +582,7 @@
                 }
 
             } catch (err) {
-                renderError('Could not reach the backend. Ensure the Render service is running and try again.');
+                renderError('Could not reach the backend. Ensure your Render web service is active and try again.');
             } finally {
                 btn.disabled = false;
                 btn.textContent = 'Find Optimal Localities →';
@@ -612,7 +593,6 @@
             const container = document.getElementById('resultsContainer');
             container.innerHTML = '';
 
-            // Workplace banner
             const banner = document.createElement('div');
             banner.className = 'workplace-banner';
             banner.innerHTML = `
@@ -620,7 +600,6 @@
                 <span>Pinned: <strong>${escHtml(data.searched_workplace.name)}</strong> &nbsp;·&nbsp; ${escHtml(data.detected_city)}</span>`;
             container.appendChild(banner);
 
-            // Recommendation cards
             data.recommendations.forEach((rec, i) => {
                 const card = document.createElement('div');
                 card.className = 'result-card';
@@ -641,7 +620,6 @@
                 container.appendChild(card);
             });
 
-            // Model badge
             const badge = document.createElement('div');
             badge.className = `model-badge ${data.model_used ? 'ml' : ''}`;
             badge.innerHTML = `<span class="dot"></span> ${data.model_used ? 'XGBoost ML model active' : 'Locality estimation engine active'}`;
@@ -660,7 +638,6 @@
             return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         }
 
-        // Allow Enter key to submit
         document.addEventListener('keydown', e => {
             if (e.key === 'Enter' && document.activeElement.tagName !== 'SELECT') {
                 runOptimizer();
