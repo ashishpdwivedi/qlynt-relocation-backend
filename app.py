@@ -164,8 +164,12 @@ def serve_frontend():
 # ─────────────────────────────────────────────────────────────────
 # 6. Backend API Optimization Route
 # ─────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────
+# 6. Backend API Optimization Route (Fixed & Hardened)
+# ─────────────────────────────────────────────────────────────────
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
+    # ── Geocode Workplace ───────────────────────────────────────────
     try:
         geolocator = Nominatim(user_agent="qlynt_pan_india_agent_v6")
         location   = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
@@ -176,65 +180,82 @@ def optimize_relocation(input_data: RelocationInput):
         resolved_addr = location.address.lower()
     except HTTPException:
         raise
-    except Exception:
-        raise HTTPException(status_code=503, detail="Geocoding timed out. Please try again.")
+    except Exception as e:
+        raise HTTPException(status_code=503, detail=f"Geocoding service unavailable: {str(e)}")
 
+    # ── Robust City Detection ───────────────────────────────────────
     city_aliases = {
-        "Delhi":     ["delhi", "new delhi"],
-        "Mumbai":    ["mumbai", "bombay"],
+        "Delhi":     ["delhi", "new delhi", "gurgaon", "gurugram", "noida", "faridabad", "ghaziabad"],
+        "Mumbai":    ["mumbai", "bombay", "thane", "navi mumbai"],
         "Bangalore": ["bangalore", "bengaluru"],
         "Hyderabad": ["hyderabad"],
         "Kolkata":   ["kolkata", "calcutta"],
         "Chennai":   ["chennai", "madras"],
     }
-    target_city = None
+    
+    target_city = "Delhi"  # Safe default fallback city
     for city, aliases in city_aliases.items():
-        if any(a in resolved_addr for a in aliases):
+        if any(alias in resolved_addr for alias in aliases):
             target_city = city
             break
-    if not target_city:
-        ncr = ["gurgaon", "gurugram", "noida", "faridabad", "ghaziabad"]
-        target_city = "Delhi" if any(k in resolved_addr for k in ncr) else "Delhi"
 
     localities = INDIA_LOCALITIES_HUBS.get(target_city, [])
-    bathrooms  = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
+    if not localities:
+        raise HTTPException(status_code=404, detail=f"No locality hub data configured for detected city: {target_city}")
 
+    bathrooms = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
     rent_map = {}
 
+    # ── Prediction Logic Processing ──────────────────────────────────
     if USE_MODEL and model_pipeline and target_city in MODEL_KNOWN_CITIES:
-        model_furnishing = FURNISH_MAP.get(input_data.furnishing_status, "Semi-Furnished")
+        try:
+            model_furnishing = FURNISH_MAP.get(input_data.furnishing_status, "Semi-Furnished")
+            batch_rows = []
+            for area in localities:
+                floor_num   = area.get("floor", 2)
+                total_floors = area.get("total", 5)
+                floor_ratio  = round(floor_num / max(total_floors, 1), 3)
+                batch_rows.append({
+                    "bhk":              input_data.preferred_bhk,
+                    "size":             input_data.property_size,
+                    "city":             target_city,
+                    "furnishing_status": model_furnishing,
+                    "area_type":        "Super Area",
+                    "bathroom":         bathrooms,
+                    "floor_num":        floor_num,
+                    "total_floors":     total_floors,
+                    "floor_ratio":      floor_ratio,
+                })
 
-        batch_rows = []
-        for area in localities:
-            floor_num   = area["floor"]
-            total_floors = area["total"]
-            floor_ratio  = round(floor_num / max(total_floors, 1), 3)
-            batch_rows.append({
-                "bhk":              input_data.preferred_bhk,
-                "size":             input_data.property_size,
-                "city":             target_city,
-                "furnishing_status": model_furnishing,
-                "area_type":        "Super Area",
-                "bathroom":         bathrooms,
-                "floor_num":        floor_num,
-                "total_floors":     total_floors,
-                "floor_ratio":      floor_ratio,
-            })
+            input_df = pd.DataFrame(batch_rows)
+            log_preds = model_pipeline.predict(input_df)
+            base_preds = np.expm1(log_preds)
 
-        input_df  = pd.DataFrame(batch_rows)
-        log_preds = model_pipeline.predict(input_df)
-        base_preds = np.expm1(log_preds)
-
-        for i, area in enumerate(localities):
-            raw = base_preds[i] * area["factor"]
-            rent_map[area["name"]] = int(round(raw / 500) * 500)
+            for i, area in enumerate(localities):
+                raw = base_preds[i] * area["factor"]
+                rent_map[area["name"]] = int(round(raw / 500) * 500)
+        except Exception as e:
+            print(f"⚠️ Model execution failed runtime, falling back: {e}")
+            # Dynamic recovery fallback calculation if prediction matrix mismatches shapes
+            for area in localities:
+                base = area.get("base_rent", 15000)
+                rent_map[area["name"]] = fallback_estimate(
+                    base, input_data.preferred_bhk,
+                    input_data.property_size, input_data.furnishing_status
+                )
     else:
+        # Standard Fallback matrix processing for alternative conditions
         for area in localities:
-            rent_map[area["name"]] = int(round(20000 / 500) * 500)
+            base = area.get("base_rent", 15000)
+            rent_map[area["name"]] = fallback_estimate(
+                base, input_data.preferred_bhk,
+                input_data.property_size, input_data.furnishing_status
+            )
 
+    # ── Spatial Distance Mapping ─────────────────────────────────────
     suggestions = []
     for area in localities:
-        rent = rent_map[area["name"]]
+        rent = rent_map.get(area["name"], 20000)
         if rent > input_data.max_budget:
             continue
         dist_km = geodesic((office_lat, office_lon), (area["lat"], area["lon"])).km
