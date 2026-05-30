@@ -9,7 +9,7 @@ import traceback
 from geopy.distance import geodesic
 from geopy.geocoders import Nominatim
 
-app = FastAPI(title="Qlynt Pan-India Optimizer v3.0")
+app = FastAPI(title="Qlynt Pan-India Optimizer")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"], allow_headers=["*"])
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -23,7 +23,7 @@ except Exception as e:
     print(f"❌ Load error: {e}")
     model_pipeline = None
 
-# Comprehensive 120-Location Matrix
+# FULL 120-LOCATION MATRIX
 INDIA_LOCALITIES_HUBS = {
     "Delhi": [
         {"name": "Hauz Khas", "lat": 28.5494, "lon": 77.2001}, {"name": "Saket", "lat": 28.5244, "lon": 77.2066},
@@ -105,21 +105,21 @@ class RelocationInput(BaseModel):
     preferred_bhk: int
     property_size: float
     furnishing_status: str
+    bathrooms: int
+    area_type: str
+    tenant_preference: str
 
 @app.post("/optimize")
 async def optimize(input_data: RelocationInput):
     if model_pipeline is None:
-        raise HTTPException(status_code=500, detail="Engine offline.")
+        raise HTTPException(status_code=500, detail="Model offline.")
     
     try:
-        # Geocode
         geolocator = Nominatim(user_agent="qlynt_final_v3")
-        location = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
-        if not location: raise Exception("Location not found")
+        loc = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
         
-        # Detect City
         target_city = "Delhi"
-        addr = location.address.lower()
+        addr = loc.address.lower() if loc else ""
         for city in INDIA_LOCALITIES_HUBS.keys():
             if city.lower() in addr:
                 target_city = city
@@ -127,29 +127,28 @@ async def optimize(input_data: RelocationInput):
         
         hubs = INDIA_LOCALITIES_HUBS.get(target_city, INDIA_LOCALITIES_HUBS["Delhi"])
         
-        # Prepare Batch for ML
-        # NOTE: Ensure 'locality' matches your training column exactly!
         batch = [{
             "locality": hub["name"],
             "bhk": input_data.preferred_bhk,
             "size": input_data.property_size,
             "city": target_city,
             "furnishing_status": input_data.furnishing_status,
-            "area_type": "Super Area"
+            "bathroom": input_data.bathrooms,
+            "area_type": input_data.area_type,
+            "tenant_preferred": input_data.tenant_preference
         } for hub in hubs]
         
         df = pd.DataFrame(batch)
         preds = model_pipeline.predict(df)
         
-        # Process Results
         res = []
         for i, hub in enumerate(hubs):
             rent = int(preds[i])
             if rent <= input_data.max_budget:
-                dist = geodesic((location.latitude, location.longitude), (hub["lat"], hub["lon"])).km
+                dist = geodesic((loc.latitude, loc.longitude), (hub["lat"], hub["lon"])).km if loc else 0
                 res.append({"locality": hub["name"], "predicted_rent": rent, "distance_km": round(dist, 1)})
         
-        return {"success": True, "detected_city": target_city, "recommendations": sorted(res, key=lambda x: x['distance_km'])[:3]}
+        return {"success": True, "recommendations": sorted(res, key=lambda x: x['distance_km'])[:3]}
     except Exception as e:
         print(traceback.format_exc())
         raise HTTPException(status_code=500, detail=str(e))
