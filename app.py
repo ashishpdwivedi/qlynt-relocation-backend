@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
 import joblib
 import pandas as pd
@@ -11,7 +12,7 @@ import warnings
 warnings.filterwarnings("ignore")
 
 # ─────────────────────────────────────────────────────────────────
-# 1. FastAPI App
+# 1. FastAPI App Setup & Assets Configuration
 # ─────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Qlynt Pan-India Relocation Optimizer API",
@@ -27,17 +28,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+MODEL_PATH = os.path.join(BASE_DIR, "final_model_v2.pkl")
+TEMPLATE_PATH = os.path.join(BASE_DIR, "templates", "index.html")
+
 # ─────────────────────────────────────────────────────────────────
 # 2. Load Model
-#    Features: bhk | size | city | furnishing_status | area_type
-#              bathroom | floor_num | total_floors | floor_ratio
-#    Target:   log(rent)  →  we expm1() to get ₹ back
-#    Known cities:  Bangalore, Chennai, Delhi, Hyderabad, Kolkata, Mumbai
-#    Known furnishing: Furnished | Semi-Furnished | Unfurnished
 # ─────────────────────────────────────────────────────────────────
-BASE_DIR   = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "final_model_v2.pkl")
-
 try:
     model_pipeline = joblib.load(MODEL_PATH)
     USE_MODEL = True
@@ -49,7 +46,6 @@ except Exception as e:
 
 MODEL_KNOWN_CITIES = {"Bangalore", "Chennai", "Delhi", "Hyderabad", "Kolkata", "Mumbai"}
 
-# Map "Fully Furnished" → "Furnished" (model training label)
 FURNISH_MAP = {
     "Unfurnished":    "Unfurnished",
     "Semi-Furnished": "Semi-Furnished",
@@ -58,8 +54,6 @@ FURNISH_MAP = {
 
 # ─────────────────────────────────────────────────────────────────
 # 3. Locality Hub Matrix
-#    factor: multiplier vs city average (premium > 1.0, budget < 1.0)
-#    Estimated floor stats per locality type (mid-rise standard)
 # ─────────────────────────────────────────────────────────────────
 INDIA_LOCALITIES_HUBS = {
     "Delhi": [
@@ -138,23 +132,11 @@ INDIA_LOCALITIES_HUBS = {
         {"name": "Medavakkam",    "lat": 12.9191, "lon": 80.1932, "factor": 0.76, "floor": 2, "total": 4},
         {"name": "Perungudi",     "lat": 12.9654, "lon": 80.2414, "factor": 1.03, "floor": 3, "total": 6},
         {"name": "Porur",         "lat": 13.0382, "lon": 80.1565, "factor": 0.90, "floor": 2, "total": 4},
-    ]
+    ],
 }
 
 # ─────────────────────────────────────────────────────────────────
-# 4. Fallback engine for Pune / model-offline scenarios
-# ─────────────────────────────────────────────────────────────────
-BHK_MULT     = {1: 1.0, 2: 1.6, 3: 2.3, 4: 3.1}
-FURNISH_MULT = {"Unfurnished": 1.0, "Semi-Furnished": 1.18, "Fully Furnished": 1.38}
-
-def fallback_estimate(base_rent, bhk, size, furnishing):
-    bhk_m     = BHK_MULT.get(bhk, 1.0 + (bhk - 1) * 0.55)
-    furnish_m = FURNISH_MULT.get(furnishing, 1.0)
-    size_f    = max(0.75, min(1.0 + ((size - 600) / 100) * 0.03, 1.8))
-    return int(round(base_rent * bhk_m * furnish_m * size_f / 500) * 500)
-
-# ─────────────────────────────────────────────────────────────────
-# 5. Request Schema
+# 4. Request Schema
 # ─────────────────────────────────────────────────────────────────
 class RelocationInput(BaseModel):
     office_location:   str
@@ -165,24 +147,25 @@ class RelocationInput(BaseModel):
     bathrooms:         int = 2
 
 # ─────────────────────────────────────────────────────────────────
-# 6. Health Check
+# 5. Serve Frontend Interface at Root (/)
 # ─────────────────────────────────────────────────────────────────
-@app.get("/")
-def check_status():
-    return {
-        "status":       "online",
-        "coverage":     list(INDIA_LOCALITIES_HUBS.keys()),
-        "model_active": USE_MODEL,
-        "version":      "6.0"
-    }
+@app.get("/", response_class=HTMLResponse)
+def serve_frontend():
+    if os.path.exists(TEMPLATE_PATH):
+        return FileResponse(TEMPLATE_PATH)
+    return """
+    <html>
+        <body style='background:#080b10; color:#ff6b6b; font-family:sans-serif; text-align:center; padding-top:100px;'>
+            <h2>⚠️ index.html missing from /templates folder!</h2>
+        </body>
+    </html>
+    """
 
 # ─────────────────────────────────────────────────────────────────
-# 7. Core Optimization Route
+# 6. Backend API Optimization Route
 # ─────────────────────────────────────────────────────────────────
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
-
-    # ── Geocode ─────────────────────────────────────────────────────
     try:
         geolocator = Nominatim(user_agent="qlynt_pan_india_agent_v6")
         location   = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
@@ -196,7 +179,6 @@ def optimize_relocation(input_data: RelocationInput):
     except Exception:
         raise HTTPException(status_code=503, detail="Geocoding timed out. Please try again.")
 
-    # ── City detection ──────────────────────────────────────────────
     city_aliases = {
         "Delhi":     ["delhi", "new delhi"],
         "Mumbai":    ["mumbai", "bombay"],
@@ -217,7 +199,6 @@ def optimize_relocation(input_data: RelocationInput):
     localities = INDIA_LOCALITIES_HUBS.get(target_city, [])
     bathrooms  = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
 
-    # ── Predict rents ───────────────────────────────────────────────
     rent_map = {}
 
     if USE_MODEL and model_pipeline and target_city in MODEL_KNOWN_CITIES:
@@ -248,14 +229,10 @@ def optimize_relocation(input_data: RelocationInput):
             raw = base_preds[i] * area["factor"]
             rent_map[area["name"]] = int(round(raw / 500) * 500)
     else:
+        # Static Fallback estimation strategy if model loading drops out
         for area in localities:
-            base = area.get("base_rent", 15000)
-            rent_map[area["name"]] = fallback_estimate(
-                base, input_data.preferred_bhk,
-                input_data.property_size, input_data.furnishing_status
-            )
+            rent_map[area["name"]] = int(round(20000 / 500) * 500)
 
-    # ── Filter, distance, sort ──────────────────────────────────────
     suggestions = []
     for area in localities:
         rent = rent_map[area["name"]]
