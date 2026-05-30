@@ -162,18 +162,15 @@ async def optimize(data: dict):
         # Prepare input dataframe
         rows = []
 
-        for _ in hubs:
+        for hub in hubs:  # Changed from 'for _ in hubs' to iterate through the hub dictionary
             rows.append({
+                "locality": hub["name"], # <-- ADD THIS LINE (Use the column name from your training data)
                 "bhk": int(data.get("preferred_bhk", 2)),
                 "size": float(data.get("property_size", 900)),
                 "city": target_city,
-                "furnishing_status": data.get(
-                    "furnishing_status",
-                    "Semi-Furnished"
-                ),
+                "furnishing_status": data.get("furnishing_status", "Semi-Furnished"),
                 "area_type": "Super Area"
-            })
-
+        })
         df = pd.DataFrame(rows)
 
         print("\nINPUT DATAFRAME")
