@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Middleware, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, FileResponse
 from pydantic import BaseModel
@@ -147,20 +147,14 @@ class RelocationInput(BaseModel):
     bathrooms:         int = 2
 
 # ─────────────────────────────────────────────────────────────────
-# 5. Serve Frontend Interface at Root (/)
+# 5. Serve Frontend Interface at Root (/) - Fixed Dual Route
 # ─────────────────────────────────────────────────────────────────
-from fastapi import Request # <--- Make sure Request is imported at the top of your file!
-
-# ─────────────────────────────────────────────────────────────────
-# 5. Serve Frontend Interface at Root (/) - Fixed HEAD/GET Support
-# ─────────────────────────────────────────────────────────────────
-@app.route("/", methods=["GET", "HEAD"])
+@app.get("/", response_class=HTMLResponse)
+@app.head("/", response_class=HTMLResponse)
 async def serve_frontend(request: Request):
-    # If Render's automated engine sends a HEAD request, reply with a clean 200 OK
     if request.method == "HEAD":
         return HTMLResponse(content="", status_code=200)
         
-    # Standard GET request serves your beautiful user interface layout
     if os.path.exists(TEMPLATE_PATH):
         return FileResponse(TEMPLATE_PATH)
         
@@ -175,12 +169,8 @@ async def serve_frontend(request: Request):
 # ─────────────────────────────────────────────────────────────────
 # 6. Backend API Optimization Route
 # ─────────────────────────────────────────────────────────────────
-# ─────────────────────────────────────────────────────────────────
-# 6. Backend API Optimization Route (Fixed & Hardened)
-# ─────────────────────────────────────────────────────────────────
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
-    # ── Geocode Workplace ───────────────────────────────────────────
     try:
         geolocator = Nominatim(user_agent="qlynt_pan_india_agent_v6")
         location   = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
@@ -194,7 +184,6 @@ def optimize_relocation(input_data: RelocationInput):
     except Exception as e:
         raise HTTPException(status_code=503, detail=f"Geocoding service unavailable: {str(e)}")
 
-    # ── Robust City Detection ───────────────────────────────────────
     city_aliases = {
         "Delhi":     ["delhi", "new delhi", "gurgaon", "gurugram", "noida", "faridabad", "ghaziabad"],
         "Mumbai":    ["mumbai", "bombay", "thane", "navi mumbai"],
@@ -204,7 +193,7 @@ def optimize_relocation(input_data: RelocationInput):
         "Chennai":   ["chennai", "madras"],
     }
     
-    target_city = "Delhi"  # Safe default fallback city
+    target_city = "Delhi"
     for city, aliases in city_aliases.items():
         if any(alias in resolved_addr for alias in aliases):
             target_city = city
@@ -217,7 +206,6 @@ def optimize_relocation(input_data: RelocationInput):
     bathrooms = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
     rent_map = {}
 
-    # ── Prediction Logic Processing ──────────────────────────────────
     if USE_MODEL and model_pipeline and target_city in MODEL_KNOWN_CITIES:
         try:
             model_furnishing = FURNISH_MAP.get(input_data.furnishing_status, "Semi-Furnished")
@@ -246,24 +234,12 @@ def optimize_relocation(input_data: RelocationInput):
                 raw = base_preds[i] * area["factor"]
                 rent_map[area["name"]] = int(round(raw / 500) * 500)
         except Exception as e:
-            print(f"⚠️ Model execution failed runtime, falling back: {e}")
-            # Dynamic recovery fallback calculation if prediction matrix mismatches shapes
             for area in localities:
-                base = area.get("base_rent", 15000)
-                rent_map[area["name"]] = fallback_estimate(
-                    base, input_data.preferred_bhk,
-                    input_data.property_size, input_data.furnishing_status
-                )
+                rent_map[area["name"]] = int(round(18000 * area["factor"] / 500) * 500)
     else:
-        # Standard Fallback matrix processing for alternative conditions
         for area in localities:
-            base = area.get("base_rent", 15000)
-            rent_map[area["name"]] = fallback_estimate(
-                base, input_data.preferred_bhk,
-                input_data.property_size, input_data.furnishing_status
-            )
+            rent_map[area["name"]] = int(round(18000 * area["factor"] / 500) * 500)
 
-    # ── Spatial Distance Mapping ─────────────────────────────────────
     suggestions = []
     for area in localities:
         rent = rent_map.get(area["name"], 20000)
