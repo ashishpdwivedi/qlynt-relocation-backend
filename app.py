@@ -149,17 +149,28 @@ class RelocationInput(BaseModel):
 # ─────────────────────────────────────────────────────────────────
 # 5. Serve Frontend Interface at Root (/)
 # ─────────────────────────────────────────────────────────────────
-@app.get("/", response_class=HTMLResponse)
-def serve_frontend():
+from fastapi import Request # <--- Make sure Request is imported at the top of your file!
+
+# ─────────────────────────────────────────────────────────────────
+# 5. Serve Frontend Interface at Root (/) - Fixed HEAD/GET Support
+# ─────────────────────────────────────────────────────────────────
+@app.route("/", methods=["GET", "HEAD"])
+async def serve_frontend(request: Request):
+    # If Render's automated engine sends a HEAD request, reply with a clean 200 OK
+    if request.method == "HEAD":
+        return HTMLResponse(content="", status_code=200)
+        
+    # Standard GET request serves your beautiful user interface layout
     if os.path.exists(TEMPLATE_PATH):
         return FileResponse(TEMPLATE_PATH)
-    return """
+        
+    return HTMLResponse(content="""
     <html>
         <body style='background:#080b10; color:#ff6b6b; font-family:sans-serif; text-align:center; padding-top:100px;'>
             <h2>⚠️ index.html missing from /templates folder!</h2>
         </body>
     </html>
-    """
+    """, status_code=404)
 
 # ─────────────────────────────────────────────────────────────────
 # 6. Backend API Optimization Route
