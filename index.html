@@ -7,105 +7,65 @@
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex items-center justify-center p-4">
-
     <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-5 gap-6">
         <div class="md:col-span-2 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl">
             <h2 class="text-xl font-bold text-emerald-400 mb-1">Relocation Optimizer 🚀</h2>
-            <p class="text-xs text-slate-400 mb-6">Find affordable neighborhoods based on your workplace address.</p>
-            
-            <form id="optimizerForm" class="space-y-4">
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Workplace / Landmark</label>
-                    <input type="text" id="office" placeholder="e.g., IIT Delhi" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Max Monthly Rent Budget (₹)</label>
-                    <input type="number" id="budget" value="25000" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500" required>
+            <form id="optimizerForm" class="space-y-3">
+                <input type="text" id="office" placeholder="Workplace Address" class="w-full bg-slate-800 p-2 text-sm rounded-lg" required>
+                <input type="number" id="budget" placeholder="Max Rent (₹)" class="w-full bg-slate-800 p-2 text-sm rounded-lg" required>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="bhk" placeholder="BHK" class="w-full bg-slate-800 p-2 text-sm rounded-lg">
+                    <input type="number" id="size" placeholder="Sq. Ft." class="w-full bg-slate-800 p-2 text-sm rounded-lg">
                 </div>
                 <div class="grid grid-cols-2 gap-2">
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">BHK</label>
-                        <select id="bhk" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
-                            <option value="1">1 BHK</option>
-                            <option value="2" selected>2 BHK</option>
-                            <option value="3">3 BHK</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Size (Sq. Ft.)</label>
-                        <input type="number" id="size" value="900" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm" required>
-                    </div>
-                </div>
-                <div>
-                    <label class="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Furnishing Status</label>
-                    <select id="furnishing" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-2.5 text-sm">
-                        <option value="Unfurnished">Unfurnished</option>
-                        <option value="Semi-Furnished" selected>Semi-Furnished</option>
-                        <option value="Fully Furnished">Fully Furnished</option>
+                    <input type="number" id="bath" placeholder="Bathrooms" class="w-full bg-slate-800 p-2 text-sm rounded-lg">
+                    <select id="area_type" class="w-full bg-slate-800 p-2 text-sm rounded-lg">
+                        <option value="Super Area">Super Area</option>
+                        <option value="Carpet Area">Carpet Area</option>
                     </select>
                 </div>
-                <button type="submit" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-bold p-3 rounded-xl transition duration-200 mt-4 text-sm cursor-pointer">Find Optimal Localities</button>
+                <select id="furnishing" class="w-full bg-slate-800 p-2 text-sm rounded-lg">
+                    <option value="Unfurnished">Unfurnished</option>
+                    <option value="Semi-Furnished">Semi-Furnished</option>
+                    <option value="Fully Furnished">Fully Furnished</option>
+                </select>
+                <select id="tenant" class="w-full bg-slate-800 p-2 text-sm rounded-lg">
+                    <option value="Bachelors/Family">Bachelors/Family</option>
+                    <option value="Bachelors">Bachelors</option>
+                    <option value="Family">Family</option>
+                </select>
+                <button type="submit" class="w-full bg-emerald-500 p-3 rounded-xl font-bold text-slate-950">Find Localities</button>
             </form>
         </div>
-
-        <div class="md:col-span-3 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl flex flex-col">
-            <h3 class="text-lg font-bold text-slate-200 mb-4">Top Neighborhood Matches</h3>
-            <div id="resultsContainer" class="flex-1 flex flex-col justify-center items-center text-slate-500 text-sm p-4">
-                <p>Enter your office address and hit "Find" to start.</p>
-            </div>
+        <div class="md:col-span-3 bg-slate-900 p-6 rounded-2xl border border-slate-800 shadow-xl" id="resultsContainer">
+            <p class="text-slate-500">Enter details to see results.</p>
         </div>
     </div>
-
     <script>
         document.getElementById('optimizerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
-            const container = document.getElementById('resultsContainer');
-            container.innerHTML = `<div class="text-emerald-400 animate-pulse">Analyzing...</div>`;
-
             const payload = {
                 office_location: document.getElementById('office').value,
                 max_budget: parseFloat(document.getElementById('budget').value),
                 preferred_bhk: parseInt(document.getElementById('bhk').value),
                 property_size: parseFloat(document.getElementById('size').value),
-                furnishing_status: document.getElementById('furnishing').value
+                furnishing_status: document.getElementById('furnishing').value,
+                bathrooms: parseInt(document.getElementById('bath').value),
+                area_type: document.getElementById('area_type').value,
+                tenant_preference: document.getElementById('tenant').value
             };
-
-            try {
-                // Using relative path so it hits the SAME server rendering the HTML
-                const response = await fetch('/optimize', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        office_location: document.getElementById('office').value,
-                        max_budget: document.getElementById('budget').value,
-                        preferred_bhk: document.getElementById('bhk').value,
-                        property_size: document.getElementById('size').value,
-                        furnishing_status: document.getElementById('furnishing').value
-                    })
-                });
-
-                if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`Server Error (${response.status}): ${errorText}`);
-                }
-
-                const data = await response.json();
-                
-                if (data.recommendations && data.recommendations.length > 0) {
-                    container.innerHTML = '';
-                    data.recommendations.forEach(rec => {
-                        container.innerHTML += `
-                            <div class="w-full bg-slate-800 border border-slate-700 p-4 rounded-xl mb-3 flex justify-between">
-                                <div><h4 class="font-bold text-emerald-400">${rec.locality}</h4><p class="text-xs">Distance: ${rec.distance_km}km</p></div>
-                                <div class="text-right"><p class="text-xl font-bold">₹${rec.predicted_rent.toLocaleString()}</p></div>
-                            </div>`;
-                    });
-                } else {
-                    container.innerHTML = `<p class="text-amber-500">No matches found in your budget.</p>`;
-                }
-            } catch (err) {
-                container.innerHTML = `<div class="text-rose-500 text-xs p-4 bg-rose-950 rounded-lg">Connection Failed: ${err.message}</div>`;
-            }
+            const response = await fetch('/optimize', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            });
+            const data = await response.json();
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = data.recommendations.map(r => `
+                <div class="bg-slate-800 p-4 mb-2 rounded-lg flex justify-between">
+                    <div><h4 class="font-bold text-emerald-400">${r.locality}</h4></div>
+                    <div>₹${r.predicted_rent.toLocaleString()}</div>
+                </div>`).join('');
         });
     </script>
 </body>
