@@ -138,19 +138,7 @@ INDIA_LOCALITIES_HUBS = {
         {"name": "Medavakkam",    "lat": 12.9191, "lon": 80.1932, "factor": 0.76, "floor": 2, "total": 4},
         {"name": "Perungudi",     "lat": 12.9654, "lon": 80.2414, "factor": 1.03, "floor": 3, "total": 6},
         {"name": "Porur",         "lat": 13.0382, "lon": 80.1565, "factor": 0.90, "floor": 2, "total": 4},
-    ],
-    "Pune": [
-        {"name": "Baner",           "lat": 18.5590, "lon": 73.7868, "factor": 1.15, "floor": 3, "total": 8,  "base_rent": 18000},
-        {"name": "Hinjewadi",       "lat": 18.5913, "lon": 73.7389, "factor": 0.95, "floor": 3, "total": 8,  "base_rent": 15000},
-        {"name": "Kothrud",         "lat": 18.5074, "lon": 73.8077, "factor": 1.08, "floor": 2, "total": 5,  "base_rent": 17000},
-        {"name": "Viman Nagar",     "lat": 18.5679, "lon": 73.9143, "factor": 1.28, "floor": 3, "total": 7,  "base_rent": 20000},
-        {"name": "Wakad",           "lat": 18.5982, "lon": 73.7627, "factor": 1.02, "floor": 3, "total": 7,  "base_rent": 16000},
-        {"name": "Hadapsar",        "lat": 18.5018, "lon": 73.9260, "factor": 0.83, "floor": 2, "total": 5,  "base_rent": 13000},
-        {"name": "Aundh",           "lat": 18.5598, "lon": 73.8075, "factor": 1.21, "floor": 2, "total": 6,  "base_rent": 19000},
-        {"name": "Magarpatta",      "lat": 18.5099, "lon": 73.9285, "factor": 1.34, "floor": 4, "total": 10, "base_rent": 21000},
-        {"name": "Katraj",          "lat": 18.4530, "lon": 73.8626, "factor": 0.64, "floor": 1, "total": 3,  "base_rent": 10000},
-        {"name": "Pimple Saudagar", "lat": 18.6127, "lon": 73.7997, "factor": 0.96, "floor": 3, "total": 7,  "base_rent": 15000},
-    ],
+    ]
 }
 
 # ─────────────────────────────────────────────────────────────────
