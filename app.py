@@ -26,8 +26,7 @@ app.add_middleware(
 
 # 2. Resolve Dynamic Working Directories for Production/Cloud Deployment
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-MODEL_PATH = os.path.join(BASE_DIR, "rent_optimizer_pipeline.pkl")
-
+MODEL_PATH = os.path.join(BASE_DIR, "final_model_v2.pkl")
 # Load the Trained XGBoost Pipeline Model
 try:
     with open(MODEL_PATH, 'rb') as f:
