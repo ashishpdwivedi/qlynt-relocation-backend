@@ -53,19 +53,19 @@ FURNISH_MAP = {
 }
 
 # ─────────────────────────────────────────────────────────────────
-# 3.1. Inflation Adjustment Factors (Base: 2022 -> Current: 2026)
+# ─────────────────────────────────────────────────────────────────
+# 3.1. Rental Inflation Adjustment Factors (Base: 2022 -> Current: May 2026)
 # ─────────────────────────────────────────────────────────────────
 # These factors represent the cumulative growth in rental costs
-# observed in major Indian cities over the last 4 years.
+# observed in major Indian real estate markets over the last 4 years.
 CITY_INFLATION_MULTIPLIER = {
-    "Delhi": 1.35,      # 35% growth
-    "Mumbai": 1.70,     # 40% growth (High premium demand)
-    "Bangalore": 1.45,  # 45% growth (High tech/migration demand)
-    "Hyderabad": 1.40,  # 40% growth
-    "Kolkata": 1.30,    # 30% growth
-    "Chennai": 1.35     # 35% growth
+    "Delhi": 1.60,      # 60% growth (Driven heavily by massive spikes in Gurugram/Noida)
+    "Mumbai": 1.75,     # 65% growth (Premium demand and persistent space shortages)
+    "Bangalore": 1.75,  # 75% growth (Highest cumulative growth post-2022 tech boom)
+    "Hyderabad": 1.50,  # 50% growth (Strong IT demand, but better housing supply than BLR)
+    "Chennai": 1.45,    # 45% growth (Steady IT corridor demand)
+    "Kolkata": 1.35     # 35% growth (Relatively stable market with moderate appreciation)
 }
-
 # ─────────────────────────────────────────────────────────────────
 # 3. Locality Hub Matrix
 # ─────────────────────────────────────────────────────────────────
