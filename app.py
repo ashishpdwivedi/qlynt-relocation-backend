@@ -218,51 +218,34 @@ async def serve():
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
     try:
-        geolocator = Nominatim(user_agent="qlynt_prod_v7")
-        location = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
-        if not location:
-            raise HTTPException(status_code=404, detail="Location not found.")
+        geolocator = Nominatim(user_agent="qlynt_prod_v9")
+        loc = geolocator.geocode(f"{input_data.office_location}, India", timeout=10)
         
-        target_city = "Delhi"
-        addr = location.address.lower()
-        for city in ["Delhi", "Mumbai", "Bangalore", "Hyderabad", "Kolkata", "Chennai"]:
-            if city.lower() in addr:
-                target_city = city
-                break
-        
+        target_city = next((c for c in INDIA_LOCALITIES_HUBS if c.lower() in (loc.address.lower() if loc else "")), "Delhi")
         hubs = INDIA_LOCALITIES_HUBS.get(target_city, INDIA_LOCALITIES_HUBS["Delhi"])
         
-        # Batch Predict
-        batch = [{
-            "locality": hub["name"],
-            "bhk": input_data.preferred_bhk,
-            "size": input_data.property_size,
-            "city": target_city,
-            "furnishing_status": input_data.furnishing_status,
-            "bathroom": input_data.bathrooms,
-            "area_type": input_data.area_type,
+        df = pd.DataFrame([{
+            "locality": hub["name"], "bhk": input_data.preferred_bhk, "size": input_data.property_size,
+            "city": target_city, "furnishing_status": input_data.furnishing_status,
+            "bathroom": input_data.bathrooms, "area_type": input_data.area_type,
             "tenant_preferred": input_data.tenant_preference
-        } for hub in hubs]
+        } for hub in hubs])
         
-        df = pd.DataFrame(batch)
-        raw_preds = model_pipeline.predict(df)
+        # Alignment: Force column structure to match the trained model
+        df_encoded = pd.get_dummies(df).reindex(columns=model_pipeline.feature_names_in_, fill_value=0)
         
-        # Market Calibration (Fixing low rent output)
-        inflation = CITY_INFLATION_2026.get(target_city, 1.3)
+        # Predict & Calibrate
+        preds = model_pipeline.predict(df_encoded)
+        inflation = CITY_INFLATION.get(target_city, 1.3)
+        
         res = []
         for i, hub in enumerate(hubs):
-            # Applying 2026 Calibration Multiplier to 2022 raw output
-            rent = int(np.round(np.expm1(raw_preds[i]) * inflation))
-            
+            rent = int(np.round(np.expm1(preds[i]) * inflation))
             if rent <= input_data.max_budget:
-                dist = geodesic((location.latitude, location.longitude), (hub["lat"], hub["lon"])).km
-                res.append({
-                    "locality": hub["name"],
-                    "predicted_rent": rent,
-                    "distance_km": round(dist, 1)
-                })
+                dist = geodesic((loc.latitude, loc.longitude), (hub["lat"], hub["lon"])).km if loc else 0
+                res.append({"locality": hub["name"], "predicted_rent": rent, "distance_km": round(dist, 1)})
         
         return {"success": True, "recommendations": sorted(res, key=lambda x: x['distance_km'])[:5]}
     except Exception as e:
         print(traceback.format_exc())
-        raise HTTPException(status_code=500, detail=str(e))
+        return {"success": False, "error": str(e)}
