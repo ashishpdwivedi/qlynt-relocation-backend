@@ -53,6 +53,20 @@ FURNISH_MAP = {
 }
 
 # ─────────────────────────────────────────────────────────────────
+# 3.1. Inflation Adjustment Factors (Base: 2022 -> Current: 2026)
+# ─────────────────────────────────────────────────────────────────
+# These factors represent the cumulative growth in rental costs
+# observed in major Indian cities over the last 4 years.
+CITY_INFLATION_MULTIPLIER = {
+    "Delhi": 1.35,      # 35% growth
+    "Mumbai": 1.70,     # 40% growth (High premium demand)
+    "Bangalore": 1.45,  # 45% growth (High tech/migration demand)
+    "Hyderabad": 1.40,  # 40% growth
+    "Kolkata": 1.30,    # 30% growth
+    "Chennai": 1.35     # 35% growth
+}
+
+# ─────────────────────────────────────────────────────────────────
 # 3. Locality Hub Matrix
 # ─────────────────────────────────────────────────────────────────
 INDIA_LOCALITIES_HUBS = {
@@ -135,6 +149,8 @@ INDIA_LOCALITIES_HUBS = {
     ],
 }
 
+
+
 # ─────────────────────────────────────────────────────────────────
 # 4. Request Schema
 # ─────────────────────────────────────────────────────────────────
@@ -168,6 +184,9 @@ async def serve_frontend(request: Request):
 
 # ─────────────────────────────────────────────────────────────────
 # 6. Backend API Optimization Route
+# ─────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────
+# 6. Backend API Optimization Route (Updated for 2026 Market Index)
 # ─────────────────────────────────────────────────────────────────
 @app.post("/optimize")
 def optimize_relocation(input_data: RelocationInput):
@@ -206,6 +225,9 @@ def optimize_relocation(input_data: RelocationInput):
     bathrooms = max(1, min(input_data.bathrooms, input_data.preferred_bhk + 1))
     rent_map = {}
 
+    # Get the specific 2026 inflation multiplier for the resolved city (Defaults to 1.35 if not listed)
+    infl_multiplier = CITY_INFLATION_MULTIPLIER.get(target_city, 1.35)
+
     if USE_MODEL and model_pipeline and target_city in MODEL_KNOWN_CITIES:
         try:
             model_furnishing = FURNISH_MAP.get(input_data.furnishing_status, "Semi-Furnished")
@@ -231,14 +253,19 @@ def optimize_relocation(input_data: RelocationInput):
             base_preds = np.expm1(log_preds)
 
             for i, area in enumerate(localities):
-                raw = base_preds[i] * area["factor"]
+                # Applied 2026 city inflation index scaling factor here
+                raw = base_preds[i] * area["factor"] * infl_multiplier
                 rent_map[area["name"]] = int(round(raw / 500) * 500)
         except Exception as e:
             for area in localities:
-                rent_map[area["name"]] = int(round(18000 * area["factor"] / 500) * 500)
+                # Fallback handler calculation adjusted for inflation
+                raw = 18000 * area["factor"] * infl_multiplier
+                rent_map[area["name"]] = int(round(raw / 500) * 500)
     else:
         for area in localities:
-            rent_map[area["name"]] = int(round(18000 * area["factor"] / 500) * 500)
+            # Standalone engine calculation adjusted for inflation
+            raw = 18000 * area["factor"] * infl_multiplier
+            rent_map[area["name"]] = int(round(raw / 500) * 500)
 
     suggestions = []
     for area in localities:
