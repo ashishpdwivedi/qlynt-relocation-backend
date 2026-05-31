@@ -2,68 +2,49 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Qlynt — Relocation Optimizer</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
-    <style>
-        :root { --bg: #080b10; --surface: #0e1420; --surface-2: #141b28; --border: rgba(255,255,255,0.07); --border-h: rgba(99,235,170,0.3); --accent: #63ebaa; --accent-dim: #3dbd82; --text: #e8edf5; --text-2: #8994a8; --text-3: #4f5a6e; --font-head: 'Syne', sans-serif; --font-body: 'DM Sans', sans-serif; }
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body { background: var(--bg); color: var(--text); font-family: var(--font-body); min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 32px 16px; }
-        .app-grid { display: grid; grid-template-columns: 360px 1fr; gap: 20px; width: 100%; max-width: 960px; }
-        .card { background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 28px; }
-        .form-section-label { font-family: var(--font-head); font-size: 10px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--text-3); margin-bottom: 7px; }
-        input, select { width: 100%; background: var(--surface-2); border: 1px solid var(--border); border-radius: 10px; padding: 11px 14px; color: var(--text); margin-bottom: 12px; }
-        .btn-submit { width: 100%; background: var(--accent); border-radius: 11px; padding: 13px; font-family: var(--font-head); font-weight: 700; color: #040709; cursor: pointer; transition: 0.2s; }
-        .btn-submit:hover { background: #7bf5bc; box-shadow: 0 0 20px rgba(99,235,170,0.2); }
-        .result-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: 14px; padding: 16px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-    <header style="text-align:center; margin-bottom:40px;">
-        <h1 style="font-family: var(--font-head); font-size: 40px; font-weight: 800;">Qlynt <span style="color:var(--accent)">Optimizer</span></h1>
-    </header>
-    <div class="app-grid">
-        <div class="card">
-            <form id="optimizerForm">
-                <label class="form-section-label">Workplace</label>
-                <input type="text" id="office" placeholder="e.g., IIT Delhi" required>
-                <label class="form-section-label">Max Rent (₹)</label>
-                <input type="number" id="budget" value="25000" required>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <input type="number" id="bhk" placeholder="BHK" required>
-                    <input type="number" id="size" placeholder="Sq. Ft." required>
+<body class="bg-slate-950 text-slate-100 min-h-screen p-4">
+    <div class="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-6">
+        <div class="md:col-span-2 bg-slate-900 p-6 rounded-2xl border border-slate-800">
+            <h2 class="text-xl font-bold text-emerald-400 mb-4">Relocation Optimizer 🚀</h2>
+            <form id="optimizerForm" class="space-y-3">
+                <input type="text" id="office" placeholder="Workplace Address" class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700" required>
+                <input type="number" id="budget" placeholder="Max Rent (₹)" class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700" required>
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="bhk" placeholder="BHK" required class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
+                    <input type="number" id="size" placeholder="Sq. Ft." required class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
                 </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <input type="number" id="bath" placeholder="Bathrooms" required>
-                    <select id="area_type">
+                <div class="grid grid-cols-2 gap-2">
+                    <input type="number" id="bath" placeholder="Bathrooms" required class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
+                    <select id="area_type" class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
                         <option value="Super Area">Super Area</option>
                         <option value="Carpet Area">Carpet Area</option>
                     </select>
                 </div>
-                <select id="furnishing">
+                <select id="furnishing" class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
                     <option value="Unfurnished">Unfurnished</option>
                     <option value="Semi-Furnished">Semi-Furnished</option>
                     <option value="Fully Furnished">Fully Furnished</option>
                 </select>
-                <select id="tenant">
+                <select id="tenant" class="w-full bg-slate-800 p-3 rounded-lg border border-slate-700">
                     <option value="Bachelors/Family">Bachelors/Family</option>
                     <option value="Bachelors">Bachelors</option>
                     <option value="Family">Family</option>
                 </select>
-                <button type="submit" class="btn-submit">Find Localities</button>
+                <button type="submit" class="w-full bg-emerald-500 p-3 rounded-xl font-bold text-slate-950 transition">Find Localities</button>
             </form>
         </div>
-        <div class="card" id="resultsContainer">
-            <p style="color:var(--text-3)">Enter your details to generate estimates...</p>
+        <div class="md:col-span-3 bg-slate-900 p-6 rounded-2xl border border-slate-800" id="resultsContainer">
+            <p class="text-slate-500 italic">Enter location details to generate estimates...</p>
         </div>
     </div>
     <script>
         document.getElementById('optimizerForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const container = document.getElementById('resultsContainer');
-            container.innerHTML = `<p style="color:var(--accent)">Analyzing market trends...</p>`;
+            container.innerHTML = `<p class="text-emerald-400">Calculating...</p>`;
             const payload = {
                 office_location: document.getElementById('office').value,
                 max_budget: parseFloat(document.getElementById('budget').value),
@@ -74,15 +55,15 @@
                 area_type: document.getElementById('area_type').value,
                 tenant_preference: document.getElementById('tenant').value
             };
-            const res = await fetch('/optimize', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            const res = await fetch('/optimize', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
             const data = await res.json();
             if (data.success) {
                 container.innerHTML = data.recommendations.map(r => `
-                    <div class="result-card">
-                        <div><h4 style="font-weight:700; color:var(--accent)">${r.locality}</h4><small>${r.distance_km} km away</small></div>
-                        <div style="font-size: 20px; font-weight: 800;">₹${r.predicted_rent.toLocaleString()}</div>
+                    <div class="bg-slate-800 border border-slate-700 p-4 rounded-xl flex justify-between items-center mb-2">
+                        <div><h4 class="font-bold text-emerald-400">${r.locality}</h4><p class="text-xs">${r.distance_km}km away</p></div>
+                        <div class="font-bold text-lg">₹${r.predicted_rent.toLocaleString()}</div>
                     </div>`).join('');
-            } else { container.innerHTML = `<p style="color:var(--danger)">Error: ${data.error}</p>`; }
+            } else { container.innerHTML = `<p class="text-rose-500">Error: ${data.error}</p>`; }
         });
     </script>
 </body>
